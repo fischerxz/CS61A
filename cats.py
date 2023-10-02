@@ -256,24 +256,33 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
+    # Check if we have exceeded the limit
+    if limit < 0: # Base cases should go here, you may add more base cases as needed.
         # BEGIN
-        "*** YOUR CODE HERE ***"
+        return limit + 1
         # END
+    # Base case 1: If we've reached the end of both strings
+    if not typed and not source:
+        return 0
+    # Base case 2: If one of the strings has been exhausted
+    if not typed:
+        return len(source)
+    if not source:
+        return len(typed)
     # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    # Check if the current characters match
+    if typed[0] == source[0]:
+        return minimum_mewtations(typed[1:],source[1:],limit)
     else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+        add = 1 + minimum_mewtations(typed,source[1:],limit-1)
+        remove = 1 + minimum_mewtations(typed[1:],source,limit-1)
+        substitute = 1 + minimum_mewtations(typed[1:],source[1:],limit-1)
+        return min(add,remove,substitute)
 
+       
+    
+    
+print(minimum_mewtations('sith', 'demit', 100))
 
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
@@ -312,9 +321,68 @@ def report_progress(typed, source, user_id, upload):
     0.2
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    counter = 0
+    for i in range(len(typed)):
+        if typed[i] == source[i]:
+            counter += 1
+        else:
+            break
+    progress = counter/len(source)
+    content = {'id': user_id, 'progress': progress}
+    upload(content)
+    return progress
     # END PROBLEM 8
 
+print_progress = lambda d: print('ID:', d['id'], 'Progress:', d['progress'])
+source = ['I', 'have', 'begun', 'to', 'type']
+#report_progress(['I', 'hve', 'begun', 'to', 'type'], source, 3, print_progress)
+
+
+
+
+
+
+def match(words, times):
+    """A data abstraction containing all words typed and their times.
+
+    Arguments:
+        words: A list of strings, each string representing a word typed.
+        times: A list of lists for how long it took for each player to type
+            each word.
+            times[i][j] = time it took for player i to type words[j].
+
+    Example input:
+        words: ['Hello', 'world']
+        times: [[5, 1], [4, 2]]
+    """
+    assert all([type(w) == str for w in words]), 'words should be a list of strings'
+    assert all([type(t) == list for t in times]), 'times should be a list of lists'
+    assert all([isinstance(i, (int, float)) for t in times for i in t]), 'times lists should contain numbers'
+    assert all([len(t) == len(words) for t in times]), 'There should be one word per time.'
+    return {"words": words, "times": times}
+
+def get_word(match, word_index):
+    """A utility function that gets the word with index word_index"""
+    assert 0 <= word_index < len(get_all_words(match)), "word_index out of range of words"
+    return get_all_words(match)[word_index]
+
+def time(match, player_num, word_index):
+    """A utility function for the time it took player_num to type the word at word_index"""
+    assert word_index < len(get_all_words(match)), "word_index out of range of words"
+    assert player_num < len(get_all_times(match)), "player_num out of range of players"
+    return get_all_times(match)[player_num][word_index]
+
+def get_all_words(match):
+    """A selector function for all the words in the match"""
+    return match["words"]
+
+def get_all_times(match):
+    """A selector function for all typing times for all players"""
+    return match["times"]
+
+def match_string(match):
+    """A helper function that takes in a match data abstraction and returns a string representation of it"""
+    return f"match({get_all_words(match)}, {get_all_times(match)})"
 
 def time_per_word(words, timestamps_per_player):
     """Given timing data, return a match data abstraction, which contains a
@@ -334,7 +402,20 @@ def time_per_word(words, timestamps_per_player):
     [[6, 3, 6, 2], [10, 6, 1, 2]]
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    matchword = words
+    final = []
+    def helper(times):
+        # given one player's time stamps, return times
+        time = []
+        for i in range(len(times)-1):
+            time.append(times[i+1]-times[i])
+        return time
+    for i in range(len(timestamps_per_player)):
+        final.append(helper(timestamps_per_player[i]))
+    return match(matchword,final)
+
+
+            
     # END PROBLEM 9
 
 
@@ -356,10 +437,28 @@ def fastest_words(match):
     player_indices = range(len(get_all_times(match)))  # contains an *index* for each player
     word_indices = range(len(get_all_words(match)))    # contains an *index* for each word
     # BEGIN PROBLEM 10
-    "*** YOUR CODE HERE ***"
+    #go thru each word indice, store the word: player id with fastest time
+    #create a result list, in which each player has their list of words for them 
+    memo = {word:0 for word in get_all_words(match)}
+    for word in word_indices:
+        for player in player_indices:
+            if time(match, player, word) < time(match,memo[get_word(match, word)],word):
+                memo[get_word(match, word)] = player
+    
+    result = [list() for player in player_indices]
+    for i,j in memo.items():
+        result[j] += [i]
+    return result
+        
+
+
+
+
+
     # END PROBLEM 10
-
-
+p0 = [5, 1, 3]
+p1 = [4, 1, 6]
+fastest_words(match(['Just', 'have', 'fun'], [p0, p1]))
 def match(words, times):
     """A data abstraction containing all words typed and their times.
 
