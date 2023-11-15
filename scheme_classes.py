@@ -52,10 +52,18 @@ class Frame:
         >>> env.make_child_frame(formals, expressions)
         <{a: 1, b: 2, c: 3} -> <Global Frame>>
         """
-        if len(formals) != len(vals):
-            raise SchemeError('Incorrect number of arguments to function call')
         # BEGIN PROBLEM 8
-        "*** YOUR CODE HERE ***"
+        if len(formals) != len(vals): # inputs of same length
+            raise SchemeError('Incorrect number of arguments to function call')
+        # setting parent frame to self
+        new_frame = Frame(self)
+        #binding parameters to vals
+        while formals:
+            new_frame.define(formals.first,vals.first)
+            formals, vals = formals.rest, vals.rest
+        return new_frame # return child frame
+
+        
         # END PROBLEM 8
 
 ##############
